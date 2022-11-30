@@ -1,20 +1,5 @@
 #include "Scene.h"
 
-//SPHERE
-void Sphere_set(float * center, float radius, float reflectivness, unsigned char * color, Sphere * output)
-{
-    output->center[0] = center[0];
-    output->center[1] = center[1];
-    output->center[2] = center[2];
-
-    output->color[0] = color[0];
-    output->color[1] = color[1];
-    output->color[2] = color[2];
-
-    output->reflectivness = reflectivness;
-    output->radius = radius;
-}
-
 //LIGHT
 void Light_set(Vec3 position, Vec3 color, float radius, Light * output)
 {
@@ -29,12 +14,12 @@ void Light_set(Vec3 position, Vec3 color, float radius, Light * output)
 }
 
 //SCENE
-void Scene_set(Camera * camera, Sphere * spheres, Light * lights, Vec3 * background, Scene * output)
+void Scene_set(Camera * camera, Sphere * spheres, Light * lights, Image * skybox, Scene * output)
 {
     output->camera = camera;
     output->lights = lights;
     output->spheres = spheres;
-    output->background = background;
+    output->skybox = skybox;
 }
 
 void Scene_add_Light(Light * light, Scene * output)
@@ -92,11 +77,10 @@ void Scene_render(Scene * scene, Image * image)
         for ( unsigned short y = 0; y < scene->camera->resolution[1]; y++ )
         {
 
-            unsigned char pixel[3] = {0, 0, 0};
             Vec3 pix;
             float tmp[3];
 
-            memcpy(tmp, &scene->camera->directionMatrix[3 * ( y * scene->camera->resolution[0] + x)], sizeof( float ) * 3 );
+            memcpy(tmp, &scene->camera->directionMatrix[3 * ( y * scene->camera->resolution[0] + x ) ], sizeof( float ) * 3 );
 
             Vec3 dir; 
             Vec3_arrayToVec(tmp, &dir);
@@ -105,15 +89,9 @@ void Scene_render(Scene * scene, Image * image)
             Ray_set( scene->camera->position, &dir, &ray );
 
             for ( unsigned short i = 0; i < scene->sphere_count; i++ )
-            {
-                Ray_castSphere( &ray, &scene->spheres[i], scene, pixel, 0 );
-            }
+                Ray_castSphere( &ray, &scene->spheres[i], scene, &pix, 0 );
 
-            pix.x = (float) pixel[0] / 255;
-            pix.y = (float) pixel[1] / 255;
-            pix.z = (float) pixel[2] / 255;
-
-            Image_setPixel(image, scene->camera->resolution[1] - x - 1, y, &pix);
+            Image_setPixel(image, scene->camera->resolution[1] - x - 1, scene->camera->resolution[0] - y - 1, &pix);
         }
     }
 

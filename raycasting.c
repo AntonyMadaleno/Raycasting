@@ -27,7 +27,7 @@ void main( int argc, char * argv[] )
     Image img;
     float position[3] = {0.0, 0.0, 0.0};
     float dir[3] = {0.0, 0.0, 1.0};
-    unsigned short res[2] = {1000, 1000};
+    unsigned short res[2] = {2000, 2000};
     float fov[2] = {90, 90};
 
     Image_set(res[0], res[1], &img);
@@ -53,64 +53,64 @@ void main( int argc, char * argv[] )
     Sphere * spheres;
     spheres = (Sphere *) malloc( sizeof( Sphere ) * 9);
 
-    float sphere0_center[3] = { 0, 0, 4 };
+    Vec3 sphere0_center = { 0, 0, 4 };
     float sphere0_radius = 1.5;
-    unsigned char sphere0_color[3] = { 25, 25, 25 };
+    Vec3 sphere0_color = { 0.0, 0.0, 0.0 };
 
-    Sphere_set( sphere0_center, sphere0_radius, 0.9, sphere0_color, &spheres[0] );
+    Sphere_set( &sphere0_center, sphere0_radius, 0.80, &sphere0_color, &spheres[0] );
 
-    float sphere1_center[3] = { 0, 5, -3};
+    Vec3 sphere1_center = { 0, 5, -3};
     float sphere1_radius = 1;
-    unsigned char sphere1_color[3] = { 255, 0, 0 };
+    Vec3 sphere1_color = { 0.6, 0.2, 0.4 };
     
-    Sphere_set( sphere1_center, sphere1_radius, 0.25, sphere1_color, &spheres[1] );
+    Sphere_set( &sphere1_center, sphere1_radius, 0.2, &sphere1_color, &spheres[1] );
 
-    float sphere2_center[3] = { 0, -5, -3};
+    Vec3 sphere2_center = { 0, -5, -3};
     float sphere2_radius = 1;
-    unsigned char sphere2_color[3] = { 0, 255, 0 };
+    Vec3 sphere2_color = { 0.4, 0.6, 0.2 };
     
-    Sphere_set( sphere2_center, sphere2_radius, 0.25, sphere2_color, &spheres[2] );
+    Sphere_set( &sphere2_center, sphere2_radius, 0.2, &sphere2_color, &spheres[2] );
 
-    float sphere3_center[3] = { 0, 5, 7};
+    Vec3 sphere3_center = { 0, 5, 7};
     float sphere3_radius = 1;
-    unsigned char sphere3_color[3] = { 0, 0, 255 };
+    Vec3 sphere3_color = { 0.5, 0.3, 0.3 };
     
-    Sphere_set( sphere3_center, sphere3_radius, 0.25, sphere3_color, &spheres[3] );
+    Sphere_set( &sphere3_center, sphere3_radius, 0.2, &sphere3_color, &spheres[3] );
 
-    float sphere4_center[3] = { 0, -5, 7};
+    Vec3 sphere4_center = { 0, -5, 7};
     float sphere4_radius = 1;
-    unsigned char sphere4_color[3] = { 127, 127, 0 };
+    Vec3 sphere4_color = { 0.3, 0.3, 0.5 };
     
-    Sphere_set( sphere4_center, sphere4_radius, 0.25, sphere4_color, &spheres[4] );
+    Sphere_set( &sphere4_center, sphere4_radius, 0.2, &sphere4_color, &spheres[4] );
 
-    float sphere5_center[3] = { 5, 0, 7};
+    Vec3 sphere5_center = { 5, 0, 7};
     float sphere5_radius = 1;
-    unsigned char sphere5_color[3] = { 63, 127, 63 };
+    Vec3 sphere5_color = { 0.3, 0.5, 0.3 };
     
-    Sphere_set( sphere5_center, sphere5_radius, 0.25, sphere5_color, &spheres[5] );
+    Sphere_set( &sphere5_center, sphere5_radius, 0.2, &sphere5_color, &spheres[5] );
 
-    float sphere6_center[3] = { -5, 0, 7};
+    Vec3 sphere6_center = { -5, 0, 7};
     float sphere6_radius = 1;
-    unsigned char sphere6_color[3] = { 127, 63, 63 };
+    Vec3 sphere6_color = { 0.5, 0.5, 0.3 };
     
-    Sphere_set( sphere6_center, sphere6_radius, 0.25, sphere6_color, &spheres[6] );
+    Sphere_set( &sphere6_center, sphere6_radius, 0.2, &sphere6_color, &spheres[6] );
 
-    float sphere7_center[3] = { 5, 0, -3 };
+    Vec3 sphere7_center = { 5, 0, -3 };
     float sphere7_radius = 1;
-    unsigned char sphere7_color[3] = { 127, 0, 127 };
+    Vec3 sphere7_color = { 0.5, 0.3, 0.5 };
     
-    Sphere_set( sphere7_center, sphere7_radius, 0.25, sphere7_color, &spheres[7] );
+    Sphere_set( &sphere7_center, sphere7_radius, 0.2, &sphere7_color, &spheres[7] );
 
-    float sphere8_center[3] = { -5, 0, -3};
+    Vec3 sphere8_center = { -5, 0, -3};
     float sphere8_radius = 1;
-    unsigned char sphere8_color[3] = { 0, 127, 127 };
+    Vec3 sphere8_color = { 0.3, 0.5, 0.5 };
     
-    Sphere_set( sphere8_center, sphere8_radius, 0.25, sphere8_color, &spheres[8] );
+    Sphere_set( &sphere8_center, sphere8_radius, 0.2, &sphere8_color, &spheres[8] );
     
     Scene scene;
-    Vec3 background;
-    Vec3_set(0.64, 0.72, 0.8, &background);
-    Scene_set( &camera, spheres, lights, &background, &scene );
+    Image skybox;
+    Image_import(&skybox, "assets/skybox.bmp");
+    Scene_set( &camera, spheres, lights, &skybox, &scene );
     scene.light_count = 1;
     scene.sphere_count = 9;
     
@@ -120,10 +120,10 @@ void main( int argc, char * argv[] )
 
         for (int it = 1; it < scene.sphere_count; it++)
         {
-            scene.spheres[it].center[0] = cosf( M_PIF/4 + M_PIF * t / 30 + it%4 * M_PIF/2) * 5;
-            scene.spheres[it].center[1] = sinf( M_PIF/4 + M_PIF * t / 30 + it%4 * M_PIF/2) * 5;
+            scene.spheres[it].center->x = cosf( M_PIF/4 + M_PIF * t / 30 + it%4 * M_PIF/2) * 5;
+            scene.spheres[it].center->y = sinf( M_PIF/4 + M_PIF * t / 30 + it%4 * M_PIF/2) * 5;
         }
-        
+
         Scene_render(&scene, &img);
 
         clock_t end = clock();

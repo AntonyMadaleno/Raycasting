@@ -3,20 +3,11 @@
 #include "Scene.h"
 #include "Camera.h"
 #include "Plane.h"
+#include "Sphere.h"
+#include "Image.h"
 
 #define MAX_REBOUND 5//used both as max reflection rebound aswell as max light cast depending on reflectivness
-#define SOFT_SHADOW_RAY_COUNT 20//WILL BE USED AS SQUARED VALUE !
-
-#ifndef SPHERE
-#define SPHERE
-    typedef struct Sphere
-    {
-        float center[3];
-        float radius;
-        float reflectivness;
-        unsigned char color[3];
-    } Sphere;
-#endif
+#define SOFT_SHADOW_RAY_COUNT 10
 
 #ifndef LIGHT
 #define LIGHT
@@ -35,7 +26,7 @@ typedef struct Scene
     Sphere * spheres;
     Light * lights;
     Camera * camera;
-    Vec3 * background;
+    Image * skybox;
 } Scene;
 #endif
 
@@ -49,5 +40,5 @@ typedef struct Ray
 void Ray_set(float origin[3], Vec3 * direction, Ray * output);
 
 //try intersect with given objects and place color value in given pixel (unsigned char[3])
-unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, unsigned char output[3], unsigned char i );
-unsigned char Ray_castPlane(Ray * ray, Plane * plane, Scene * scene, unsigned char output[3], unsigned char i );
+unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, Vec3 * output, unsigned char i );
+unsigned char Ray_castPlane(Ray * ray, Plane * plane, Scene * scene, Vec3 * output, unsigned char i );

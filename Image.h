@@ -15,4 +15,5 @@ void Image_setPixel(Image * img, unsigned short x, unsigned short y, Vec3 * pixe
 
 void Image_average(unsigned char size, Image * img, Image * output);
 
+void Image_import(Image * img, char * filepath);
 void Image_export(Image * img, char * filepath);

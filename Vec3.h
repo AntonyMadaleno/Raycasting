@@ -3,6 +3,8 @@
 #include <math.h>
 #include "string.h"
 
+#define EPSILON 0.0001f
+
 typedef struct Vec3
 {
     float x,y,z;

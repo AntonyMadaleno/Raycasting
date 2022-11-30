@@ -64,7 +64,13 @@ float Vec3_length( Vec3 * v )
         fprintf( stderr, "Specified vector is NULL !");
         exit(-1);
     }
-    return sqrtf( Vec3_length2(v) );
+
+    float l2 = Vec3_length2(v);
+
+    if (l2 > EPSILON)
+        return sqrtf( l2 );
+    else
+        return 0;
 }
 
 void Vec3_normalize( Vec3 * v, Vec3 * output)
@@ -83,9 +89,15 @@ void Vec3_normalize( Vec3 * v, Vec3 * output)
     }
 
     float l = Vec3_length(v);
-    output->x = v->x / l;
-    output->y = v->y / l;
-    output->z = v->z / l;
+
+    if (l <= EPSILON)
+        return;
+    else
+    {
+        output->x = v->x / l;
+        output->y = v->y / l;
+        output->z = v->z / l;
+    }
 }
 
 void Vec3_add( Vec3 * v, Vec3 * u, Vec3 * output)

@@ -94,6 +94,62 @@ void Image_average(unsigned char size, Image * img, Image * output)
     }
 }
 
+void Image_import(Image * img, char * filepath)
+{
+    //get data from a bmp file
+    FILE * file;
+    file = fopen(filepath, "rb");
+
+    if( file != NULL)
+    {
+
+        unsigned char * header = (unsigned char *) malloc( sizeof(unsigned char) * 14);
+        unsigned char * info_header = (unsigned char *) malloc( sizeof(unsigned char) * 40);
+
+        fread(header, sizeof(char), 14, file);
+        fread(info_header, sizeof(char), 40, file);
+
+        unsigned int width = 0;
+        unsigned int height = 0;
+
+        width += info_header[4]     << 0;
+        width += info_header[5]     << 8;
+        width += info_header[6]     << 16;
+        width += info_header[7]     << 24;
+
+        height += info_header[8]    << 0;
+        height += info_header[9]    << 8;
+        height += info_header[10]   << 16;
+        height += info_header[11]   << 24;
+
+        unsigned char * data = (unsigned char *) malloc( sizeof(unsigned char) * 3);
+        img->height = height;
+        img->width = width;
+        img->data = (float *) malloc( sizeof(float) * height * width * 3);
+
+        free(header);
+        free(info_header);
+
+        for (unsigned short y = 0; y < height; y++)
+        {
+            for (unsigned short x = 0; x < width; x++)
+            {
+                fread(data, sizeof(unsigned char), 3, file);
+                Vec3 * pixel = (Vec3 *) malloc( sizeof(Vec3) );
+                Vec3_set(
+                    (float) data[2] / 255.0f ,
+                    (float) data[1] / 255.0f ,
+                    (float) data[0] / 255.0f ,
+                    pixel);
+                Image_setPixel(img, x, y, pixel);
+            }
+        }
+
+        free(data);
+    }
+
+}
+
 void Image_export(Image * img, char * filepath)
 {
     FILE * file;
@@ -134,7 +190,7 @@ void Image_export(Image * img, char * filepath)
         file_header[12] = 0;
         file_header[13] = 0;
 
-        unsigned char information_header[40];
+        unsigned char information_header[ info_header_size ];
 
         //HEADER SIZE
         information_header[0] = info_header_size;

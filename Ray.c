@@ -48,22 +48,44 @@ void Ray_set(float origin[3], Vec3 * direction, Ray * output)
     output->shortest_distance = 1e6;
 }
 
-unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, unsigned char output[3], unsigned char i)
+unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, Vec3 * output, unsigned char i)
 {
     if (ray->shortest_distance >= 1e6)
     {
-        output[0] = scene->background->x * 255;
-        output[1] = scene->background->y * 255;
-        output[2] = scene->background->z * 255;
+        Vec3 tmp_vec;
+
+        Vec3_set(
+            ray->direction->x,
+            ray->direction->y,
+            ray->direction->z,
+            &tmp_vec
+        );
+
+        Vec3_normalize(&tmp_vec, &tmp_vec);
+
+        float u, v;
+
+        u = 0.5 + atan2f(tmp_vec.x, tmp_vec.z)/(2 * M_PIF);
+        v = 0.5 + asinf(tmp_vec.y)/M_PIF;
+
+        unsigned short x, y;
+
+        x = (unsigned short) (u * ( scene->skybox->width - 1 ) );
+        y = (unsigned short) (v * ( scene->skybox->height - 1 ) );
+
+        output->x = scene->skybox->data[y * scene->skybox->height * 3 + x * 3 + 0];
+        output->y = scene->skybox->data[y * scene->skybox->height * 3 + x * 3 + 1];
+        output->z = scene->skybox->data[y * scene->skybox->height * 3 + x * 3 + 2];
+
     }
 
     //VECTOR FROM ORIGIN TO SPHERE CENTER
     Vec3 tmp;
 
     Vec3_set(
-        -ray->origin[0] + sphere->center[0],
-        -ray->origin[1] + sphere->center[1],
-        -ray->origin[2] + sphere->center[2],
+        -ray->origin[0] + sphere->center->x,
+        -ray->origin[1] + sphere->center->y,
+        -ray->origin[2] + sphere->center->z,
         &tmp
     );
 
@@ -108,9 +130,8 @@ unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, unsigned
         Vec3_arrayToVec(ray->origin, &origine);
         Vec3_add(&move, &(origine), &position );
 
-        Vec3 sphereCenter, sphereOrigin_to_position;
-        Vec3_arrayToVec(sphere->center, &sphereCenter);
-        Vec3_substract(&sphereCenter, &position, &sphereOrigin_to_position);
+        Vec3 sphereOrigin_to_position;
+        Vec3_substract(sphere->center, &position, &sphereOrigin_to_position);
         Vec3_normalize(&sphereOrigin_to_position, &sphereOrigin_to_position);
         Vec3_normalize(ray->direction, ray->direction);
 
@@ -134,7 +155,7 @@ unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, unsigned
 
             Vec3_substract(&scene->lights[a].position, punto, punto);
 
-            for (unsigned char x = 0; x <= SOFT_SHADOW_RAY_COUNT + 1; x++)
+            for (unsigned char x = 0; x <= SOFT_SHADOW_RAY_COUNT / (i+1) + 1; x++)
             {
                 
                 Ray light_ray;
@@ -146,9 +167,9 @@ unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, unsigned
 
                     for (unsigned short b = 0; b < scene->sphere_count; b++)
                     {
-                        unsigned char test[3];
+                        Vec3 test;
                         if(&scene->spheres[b] != sphere)
-                            ret = Ray_castSphere(&light_ray, &scene->spheres[b], scene, test, MAX_REBOUND);
+                            ret = Ray_castSphere(&light_ray, &scene->spheres[b], scene, &test, MAX_REBOUND);
 
                         if (ret != 0)
                             b = scene->sphere_count;
@@ -166,7 +187,7 @@ unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, unsigned
                 {
                     x--;
                     Vec3 * tmp0 = malloc( sizeof(Vec3) );
-                    Quaternion_fromAxisAngle((float *) light_dir, x * M_PI / ( (float) SOFT_SHADOW_RAY_COUNT / 2), rotation );
+                    Quaternion_fromAxisAngle((float *) light_dir, x * M_PI / ( (float) SOFT_SHADOW_RAY_COUNT / (2*i + 2)), rotation );
                     Quaternion_rotate(rotation, (float *) punto, (float *) tmp0);
 
                     Vec3 current_dir;
@@ -180,9 +201,9 @@ unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, unsigned
 
                         for (unsigned short b = 0; b < scene->sphere_count; b++)
                         {
-                            unsigned char test[3];
+                            Vec3 test;
                             if(&scene->spheres[b] != sphere)
-                                ret = Ray_castSphere(&light_ray, &scene->spheres[b], scene, test, MAX_REBOUND);
+                                ret = Ray_castSphere(&light_ray, &scene->spheres[b], scene, &test, MAX_REBOUND);
 
                             if (ret != 0)
                                 b = scene->sphere_count;
@@ -201,7 +222,7 @@ unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, unsigned
                 }
             }  
 
-            free(rotation);
+            free( rotation );
             free( punto );
             free( p );
             free( light_dir );         
@@ -210,9 +231,9 @@ unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, unsigned
 
         free(identity);
 
-        val[0] /= SOFT_SHADOW_RAY_COUNT + 2;
-        val[1] /= SOFT_SHADOW_RAY_COUNT + 2;
-        val[2] /= SOFT_SHADOW_RAY_COUNT + 2;
+        val[0] /= SOFT_SHADOW_RAY_COUNT / (i+1) + 2;
+        val[1] /= SOFT_SHADOW_RAY_COUNT / (i+1) + 2;
+        val[2] /= SOFT_SHADOW_RAY_COUNT / (i+1) + 2;
 
         val[0] = maxf( val[0], 0 );
         val[0] = minf( val[0], 1 );
@@ -221,9 +242,9 @@ unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, unsigned
         val[2] = maxf( val[2], 0 );
         val[2] = minf( val[2], 1 );
 
-        output[0] = sphere->color[0] * val[0];
-        output[1] = sphere->color[1] * val[1];
-        output[2] = sphere->color[2] * val[2];
+        output->x = sphere->color->x * val[0];
+        output->y = sphere->color->y * val[1];
+        output->z = sphere->color->z * val[2];
 
         if ( i < MAX_REBOUND )
         {
@@ -250,18 +271,18 @@ unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, unsigned
             Vec3_arrayToVec(tmp_dir2, &rebound_direction);
             Ray_set(rebound_origin, &rebound_direction, &rebound_ray); 
 
-            unsigned char rebound_pix[3] = { 0, 0, 0 };
+            Vec3 rebound_pix;
             for (unsigned int j = 0; j < scene->sphere_count; j++)
             {
                 if (scene->spheres + j * sizeof(Sphere) != sphere)
                 {
-                    Ray_castSphere(&rebound_ray, &scene->spheres[j], scene, rebound_pix, i+1);
+                    Ray_castSphere(&rebound_ray, &scene->spheres[j], scene, &rebound_pix, i+1);
                 }
             }
 
-            output[0] = minf( 255 , output[0] + rebound_pix[0] * sphere->reflectivness );
-            output[1] = minf( 255 , output[1] + rebound_pix[1] * sphere->reflectivness );
-            output[2] = minf( 255 , output[2] + rebound_pix[2] * sphere->reflectivness );
+            output->x = minf( 1.0 , output->x + rebound_pix.x * sphere->reflectivness );
+            output->y = minf( 1.0 , output->y + rebound_pix.y * sphere->reflectivness );
+            output->z = minf( 1.0 , output->z + rebound_pix.z * sphere->reflectivness );
         }
         return 1;
 
