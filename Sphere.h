@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vec3.h"
+#include "Material.h"
 
 #ifndef SPHERE
 #define SPHERE
@@ -8,10 +9,9 @@
     {
         Vec3 * center;
         float radius;
-        float reflectivness;
-        Vec3 * color;
+        Material * material;
     } Sphere;
 #endif
 
 //SPHERE
-void Sphere_set(Vec3 * center, float radius, float reflectivness, Vec3 * color, Sphere * output);
+void Sphere_set(Vec3 * center, float radius, Material * material, Sphere * output);

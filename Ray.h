@@ -6,7 +6,7 @@
 #include "Sphere.h"
 #include "Image.h"
 
-#define MAX_REBOUND 5//used both as max reflection rebound aswell as max light cast depending on reflectivness
+#define MAX_REBOUND 5
 #define SOFT_SHADOW_RAY_COUNT 10
 
 #ifndef LIGHT

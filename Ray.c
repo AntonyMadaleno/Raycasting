@@ -123,6 +123,8 @@ unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, Vec3 * o
     if (d >= 0 && d < ray->shortest_distance)
     {
 
+        //INTERSECT WITH DA SPHERE
+
         ray->shortest_distance = d;
         Vec3 position, origine, move;
 
@@ -242,9 +244,33 @@ unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, Vec3 * o
         val[2] = maxf( val[2], 0 );
         val[2] = minf( val[2], 1 );
 
-        output->x = sphere->color->x * val[0];
-        output->y = sphere->color->y * val[1];
-        output->z = sphere->color->z * val[2];
+        float u,v;
+
+        if (sphere->material->texture != NULL || sphere->material->reflection_map != NULL)
+        {
+            u = 0.5 + atan2f(sphereOrigin_to_position.x, sphereOrigin_to_position.z)/(2 * M_PIF);
+            v = 0.5 + asinf(sphereOrigin_to_position.y)/M_PIF;   
+        }
+
+        if(sphere->material->texture != NULL)
+        {
+
+            unsigned short x, y;
+
+            x = (unsigned short) (u * ( sphere->material->texture->width - 1 ) );
+            y = (unsigned short) (v * ( sphere->material->texture->height - 1 ) ); 
+
+            output->x = sphere->material->texture->data[y * sphere->material->texture->height * 3 + x*3 + 0] * val[0];
+            output->y = sphere->material->texture->data[y * sphere->material->texture->height * 3 + x*3 + 1] * val[1];
+            output->z = sphere->material->texture->data[y * sphere->material->texture->height * 3 + x*3 + 2] * val[2];
+
+        }
+        else
+        {
+            output->x = sphere->material->default_color->x * val[0];
+            output->y = sphere->material->default_color->y * val[1];
+            output->z = sphere->material->default_color->z * val[2];
+        }
 
         if ( i < MAX_REBOUND )
         {
@@ -280,9 +306,35 @@ unsigned char Ray_castSphere(Ray * ray, Sphere * sphere, Scene * scene, Vec3 * o
                 }
             }
 
-            output->x = minf( 1.0 , output->x + rebound_pix.x * sphere->reflectivness );
-            output->y = minf( 1.0 , output->y + rebound_pix.y * sphere->reflectivness );
-            output->z = minf( 1.0 , output->z + rebound_pix.z * sphere->reflectivness );
+            if(sphere->material->reflection_map != NULL)
+            {
+
+                unsigned short x,y;
+                x = (unsigned short) (u * ( sphere->material->reflection_map->width - 1 ) );
+                y = (unsigned short) (v * ( sphere->material->reflection_map->height - 1 ) );
+
+                output->x = minf( 
+                    1.0 , 
+                    output->x + rebound_pix.x * 
+                    sphere->material->reflection_map->data[y * sphere->material->reflection_map->height * 3 + x*3 + 0]
+                );
+                output->y = minf( 
+                    1.0 , 
+                    output->y + rebound_pix.y * 
+                    sphere->material->reflection_map->data[y * sphere->material->reflection_map->height * 3 + x*3 + 1] 
+                );
+                output->z = minf( 
+                    1.0 , 
+                    output->z + rebound_pix.z * 
+                    sphere->material->reflection_map->data[y * sphere->material->reflection_map->height * 3 + x*3 + 2] 
+                );
+            }
+            else
+            {
+                output->x = minf( 1.0 , output->x + rebound_pix.x * sphere->material->default_reflection );
+                output->y = minf( 1.0 , output->y + rebound_pix.y * sphere->material->default_reflection );
+                output->z = minf( 1.0 , output->z + rebound_pix.z * sphere->material->default_reflection  );    
+            }
         }
         return 1;
 

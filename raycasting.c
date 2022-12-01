@@ -49,63 +49,66 @@ void main( int argc, char * argv[] )
 
     Light_set( light1_position, light1_color, 0.0002f, &lights[1] );
 
+    //MATERIALS
+
+    //define some basic colors
+    Vec3 grey;
+    Vec3_set(0.12, 0.12, 0.12, &grey);
+
+    Material earth, mars, mirror, jade;
+    
+    //earth
+    Image earth_texture;
+    Image_import(&earth_texture, "assets/textures/earth.bmp");
+    Material_set(&earth, &earth_texture, NULL);
+
+    //mars
+    Image mars_texture;
+    Image_import(&mars_texture, "assets/textures/mars.bmp");
+    Material_set(&mars, &mars_texture, NULL);
+
+    //mirror
+    Image mirror_ref;
+    Image_import(&mirror_ref, "assets/textures/copper.bmp");
+    Material_set(&mirror, NULL, &mirror_ref);
+    mirror.default_color = &grey;
+    mirror.default_reflection = 0.75f;
+
+    //jade
+    Image jade_tex;
+    Image_import(&jade_tex, "assets/textures/jade_texture.bmp");
+    Material_set(&jade, &jade_tex, &jade_tex);
+
     //SPHERES
     Sphere * spheres;
     spheres = (Sphere *) malloc( sizeof( Sphere ) * 9);
 
     Vec3 sphere0_center = { 0, 0, 4 };
-    float sphere0_radius = 1.5;
-    Vec3 sphere0_color = { 0.0, 0.0, 0.0 };
-
-    Sphere_set( &sphere0_center, sphere0_radius, 0.80, &sphere0_color, &spheres[0] );
+    Sphere_set( &sphere0_center, 1.5f, &mirror, &spheres[0] );
 
     Vec3 sphere1_center = { 0, 5, -3};
-    float sphere1_radius = 1;
-    Vec3 sphere1_color = { 0.6, 0.2, 0.4 };
-    
-    Sphere_set( &sphere1_center, sphere1_radius, 0.2, &sphere1_color, &spheres[1] );
+    Sphere_set( &sphere1_center, 1, &jade, &spheres[1] );
 
     Vec3 sphere2_center = { 0, -5, -3};
-    float sphere2_radius = 1;
-    Vec3 sphere2_color = { 0.4, 0.6, 0.2 };
-    
-    Sphere_set( &sphere2_center, sphere2_radius, 0.2, &sphere2_color, &spheres[2] );
+    Sphere_set( &sphere2_center, 1, &earth, &spheres[2] );
 
     Vec3 sphere3_center = { 0, 5, 7};
-    float sphere3_radius = 1;
-    Vec3 sphere3_color = { 0.5, 0.3, 0.3 };
-    
-    Sphere_set( &sphere3_center, sphere3_radius, 0.2, &sphere3_color, &spheres[3] );
+    Sphere_set( &sphere3_center, 1, &mars, &spheres[3] );
 
     Vec3 sphere4_center = { 0, -5, 7};
-    float sphere4_radius = 1;
-    Vec3 sphere4_color = { 0.3, 0.3, 0.5 };
-    
-    Sphere_set( &sphere4_center, sphere4_radius, 0.2, &sphere4_color, &spheres[4] );
+    Sphere_set( &sphere4_center, 1, &jade, &spheres[4] );
 
     Vec3 sphere5_center = { 5, 0, 7};
-    float sphere5_radius = 1;
-    Vec3 sphere5_color = { 0.3, 0.5, 0.3 };
-    
-    Sphere_set( &sphere5_center, sphere5_radius, 0.2, &sphere5_color, &spheres[5] );
+    Sphere_set( &sphere5_center, 1, &earth, &spheres[5] );
 
     Vec3 sphere6_center = { -5, 0, 7};
-    float sphere6_radius = 1;
-    Vec3 sphere6_color = { 0.5, 0.5, 0.3 };
-    
-    Sphere_set( &sphere6_center, sphere6_radius, 0.2, &sphere6_color, &spheres[6] );
+    Sphere_set( &sphere6_center, 1, &jade, &spheres[6] );
 
     Vec3 sphere7_center = { 5, 0, -3 };
-    float sphere7_radius = 1;
-    Vec3 sphere7_color = { 0.5, 0.3, 0.5 };
-    
-    Sphere_set( &sphere7_center, sphere7_radius, 0.2, &sphere7_color, &spheres[7] );
+    Sphere_set( &sphere7_center, 1, &jade, &spheres[7] );
 
     Vec3 sphere8_center = { -5, 0, -3};
-    float sphere8_radius = 1;
-    Vec3 sphere8_color = { 0.3, 0.5, 0.5 };
-    
-    Sphere_set( &sphere8_center, sphere8_radius, 0.2, &sphere8_color, &spheres[8] );
+    Sphere_set( &sphere8_center, 1, &mars, &spheres[8] );
     
     Scene scene;
     Image skybox;

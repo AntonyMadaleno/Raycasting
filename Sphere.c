@@ -1,10 +1,9 @@
 #include "Sphere.h"
 
 //SPHERE
-void Sphere_set(Vec3 * center, float radius, float reflectivness, Vec3 * color, Sphere * output)
+void Sphere_set(Vec3 * center, float radius, Material * material, Sphere * output)
 {
     output->center = center;
-    output->color = color;
-    output->reflectivness = reflectivness;
+    output->material = material;
     output->radius = radius;
 }
